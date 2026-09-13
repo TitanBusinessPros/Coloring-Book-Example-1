@@ -1,0 +1,84 @@
+// Google sign-in for the Coloring Book App, using the Firebase modular SDK.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import { firebaseConfig } from "./firebase-config.js?v=3";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
+const gateSignInBtn = document.getElementById("gateSignInBtn");
+const signOutBtn = document.getElementById("signOutBtn");
+const userInfo = document.getElementById("userInfo");
+const userAvatar = document.getElementById("userAvatar");
+const userName = document.getElementById("userName");
+const signInGate = document.getElementById("signInGate");
+const appContent = document.getElementById("appContent");
+const authStatus = document.getElementById("authStatus");
+
+// alert() is unreliable here: browsers commonly suppress dialogs that
+// fire automatically on page load (i.e. right after Google redirects
+// back) rather than from a direct click, which would leave a real error
+// completely invisible. Print it on the page instead so it can't be
+// silently swallowed.
+function showAuthError(context, error) {
+  console.error(context, error);
+  authStatus.textContent =
+    `Sign-in error (${context}): ${error.code || ""} ${error.message || error}`.trim();
+  authStatus.classList.remove("hidden");
+}
+
+function setStatus(text) {
+  authStatus.textContent = text;
+  authStatus.classList.remove("hidden");
+}
+
+function doSignIn() {
+  setStatus("Opening Google sign-in popup...");
+  signInWithPopup(auth, googleProvider)
+    .then(() => {
+      authStatus.classList.add("hidden");
+    })
+    .catch((error) => {
+      showAuthError("signing in", error);
+    });
+}
+
+gateSignInBtn.addEventListener("click", doSignIn);
+
+signOutBtn.addEventListener("click", () => {
+  signOut(auth).catch((error) => {
+    console.error("Sign-out failed:", error);
+  });
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    userInfo.classList.remove("hidden");
+    userAvatar.src = user.photoURL || "";
+    userAvatar.alt = user.displayName || "User avatar";
+    userName.textContent = user.displayName || user.email || "Signed in";
+
+    // Unlock the app
+    signInGate.classList.add("hidden");
+    appContent.classList.remove("hidden");
+  } else {
+    userInfo.classList.add("hidden");
+    userAvatar.src = "";
+    userName.textContent = "";
+
+    // Lock the app back down (e.g. on sign-out) and return to the gallery
+    // view so nobody's left staring at a canvas they can no longer reach.
+    signInGate.classList.remove("hidden");
+    appContent.classList.add("hidden");
+    if (typeof window.backToGallery === "function") {
+      window.backToGallery();
+    }
+  }
+});
