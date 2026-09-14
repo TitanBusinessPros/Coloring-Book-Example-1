@@ -33,17 +33,9 @@ this repo itself.
 - **Project number:** `1038492005185`
 - **Used for:** Google Sign-In (Firebase Authentication) only — Hosting is not used, this app is served entirely from GitHub Pages.
 
-### One-time setup still needed in the Firebase Console
-
-`js/firebase-config.js` has the project ID, auth domain, storage bucket, and
-messaging sender ID (project number) already filled in, but three fields
-can't be guessed and are still placeholders:
-
-1. **Build → Authentication → Sign-in method → Google** — enable it, set a support email.
-2. **Project settings → General → Your apps** — add a **Web app** (if one doesn't exist yet), copy the config object, and paste `apiKey`, `appId`, and `measurementId` into `js/firebase-config.js` in place of the `REPLACE_WITH_*` placeholders.
-3. **Authentication → Settings → Authorized domains** — add `titanbusinesspros.github.io` (the GitHub Pages domain this app is served from).
-
-Google Sign-In will show an error until step 2 is done.
+One-time setup (Google sign-in method enabled, Web app registered and its
+config pasted into `js/firebase-config.js`, `titanbusinesspros.github.io`
+added as an authorized domain) is complete.
 
 ## Hosting
 
